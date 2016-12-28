@@ -379,11 +379,11 @@ namespace SteamAPI
                 WebResponse res = wr.GetResponse();
                 Stream dataStream = res.GetResponseStream();
                 StreamReader reader = new StreamReader(dataStream);
-                s = reader.ReadToEnd();
-                
+                s = reader.ReadToEnd();                
             }
-            catch(Exception)
-            {                                
+            catch(Exception e)
+            {
+                Console.WriteLine(e);                                
             }
             return s;        
         }
