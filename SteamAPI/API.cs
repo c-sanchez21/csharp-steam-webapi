@@ -34,7 +34,9 @@ namespace SteamAPI
         {
             List<App> list = new List<App>();
             string json = Request(@"http://api.steampowered.com/ISteamApps/GetAppList/v0001/");
+            if (String.IsNullOrEmpty(json)) return null;
             JObject jObject = JObject.Parse(json);
+            if (jObject == null) return null;
             JToken apps = jObject["applist"]["apps"];
             JToken[] applist = apps["app"].ToArray<JToken>();
             foreach (JToken app in applist)
@@ -52,9 +54,10 @@ namespace SteamAPI
             List<Friend> list = new List<Friend>();
             string query = @"http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key="+
                 APIKey + @"&steamid="+ steamID.ToString()+@"&relationship=friend";
-
             string jsonString = Request(query);
+            if (String.IsNullOrEmpty(jsonString)) return null;
             JObject jObject = JObject.Parse(jsonString);
+            if (jObject == null) return null;
             JToken jlist = jObject["friendslist"];                        
             DateTime friendSince;
             ulong friendID;
@@ -76,7 +79,9 @@ namespace SteamAPI
         {
             string query = @"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=" + APIKey + @"&steamids="+steamID.ToString();
             List<JToken> list = new List<JToken>();
-            list.AddRange(GetPlayerTokens(Request(query)));
+            JToken[] tokens = GetPlayerTokens(Request(query));
+            if (tokens == null) return null;
+            list.AddRange(tokens);
             List<PlayerSummary> summaries = ExtractPlayerSummaries(list);
             if (summaries == null || summaries.Count == 0) return null;
             return summaries[0];            
@@ -101,7 +106,9 @@ namespace SteamAPI
                 if (count == 100) //API Limits 100 SteamID's per call
                 {
                     sb.Remove(sb.Length - 1, 1);//Remove Last '+'
-                    players.AddRange(GetPlayerTokens(Request(sb.ToString()))); //Add the Player JTokens
+                    JToken[] tokens = GetPlayerTokens(Request(sb.ToString()));
+                    if (tokens == null) return null;
+                    players.AddRange(tokens); //Add the Player JTokens
                     count = 0;
                     sb = new StringBuilder(query);
                 }
@@ -109,7 +116,9 @@ namespace SteamAPI
             if (count > 0)
             {
                 sb.Remove(sb.Length - 1, 1);//Remove Last '+'
-                players.AddRange(GetPlayerTokens(Request(sb.ToString())));
+                JToken[] tokens = GetPlayerTokens(Request(sb.ToString()));
+                if (tokens == null) return null;
+                players.AddRange(tokens);                
             }
             return ExtractPlayerSummaries(players);            
         }
@@ -227,6 +236,7 @@ namespace SteamAPI
             PlayerSummary p;
             foreach (JToken player in playerTokens)
             {
+                if (player == null) continue;
                 p = new PlayerSummary();
                 p.SteamID = (ulong)player["steamid"];
                 p.PersonaName = (string)player["personaname"];
@@ -359,7 +369,9 @@ namespace SteamAPI
         /// <returns></returns>
         private JToken[] GetPlayerTokens(string json)
         {
+            if (String.IsNullOrEmpty(json)) return null;
             JObject jObject = JObject.Parse(json);
+            if (jObject == null) return null;
             JToken response = jObject["response"];
             JToken[] players = response["players"].ToArray<JToken>();
             return players;
