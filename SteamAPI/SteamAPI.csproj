@@ -47,8 +47,6 @@
     <Compile Include="API.cs" />
     <Compile Include="Badge.cs" />
     <Compile Include="LevelStats.cs" />
-    <Compile Include="rgDescription.cs" />
-    <Compile Include="rgInventory.cs" />
     <Compile Include="Friend.cs" />
     <Compile Include="App.cs" />
     <Compile Include="OwnedGame.cs" />

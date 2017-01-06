@@ -14,7 +14,7 @@ namespace SteamAPI
     {
         #region Fields
         private string APIKey;
-        const int MaxItemsPerCall = 2000;//The number of items that are shown per call
+        const int MaxItemsPerCall = 5000;//The max number of inventory items that are shown per call
         #endregion
 
         /// <summary>
@@ -277,90 +277,22 @@ namespace SteamAPI
         }
 
         /// <summary>
-        /// Retrieves information on specified user's steam items such as trading cards, backgrounds, etc. 
+        /// Retrieves the steam inventory of the specified user. 
+        /// NOTE 2017-Jan: This call seems to be highly rate limited. (3per 2min) 
         /// </summary>
         /// <param name="steamID">64-bit Steam ID</param>
+        /// <param name="startAssetID">The asset ID from which to start retrieving items.</param>
         /// <returns>Returns nulls if Inventory is private, otherwise returns entire SteamInventory</returns>
-        public SteamInventory GetSteamInventory(ulong steamID)
+        public static SteamInventory GetSteamInventory(ulong steamID, ulong startAssetID = 0)
         {
-            int off = 0;
-            SteamInventory inv = new SteamInventory();
-            GetSteamInventory(steamID, off, inv);
-            while(inv.Items.Count == off+MaxItemsPerCall)
-            {
-                off += MaxItemsPerCall;
-                GetSteamInventory(steamID, off, inv);
-            }
-            return inv;
-        }
-
-        /// <summary>
-        /// Private helper method for retrieven a user's Steam inventory. 
-        /// </summary>
-        /// <param name="steamID"></param>
-        /// <param name="offset"></param>
-        /// <param name="inv"></param>
-        /// <returns></returns>
-        private SteamInventory GetSteamInventory(ulong steamID, int offset, SteamInventory inv)
-        {            
-            string query = @"http://steamcommunity.com/profiles/" + steamID.ToString() + "/inventory/json/753/6"+"?start="+offset;
+            string query = @"http://steamcommunity.com/inventory/" + steamID.ToString() + "/753/6?l=english&count="+MaxItemsPerCall;
+            if (startAssetID > 0)
+                query += "&start_assetid=" + startAssetID.ToString();
             string json = Request(query);
             if (String.IsNullOrEmpty(json)) return null;
-            JObject obj = JObject.Parse(json);
-            if (obj == null) return null;
-            if (bool.Parse(obj["success"].ToString()) != true) return null;
-            JToken[] items = obj["rgInventory"].ToArray<JToken>();
-            rgInventory i;
-            foreach(JToken item in items)
-            {
-                i = new rgInventory();
-                JToken rg = item.Value<JToken>().First();
-                i.ID = (ulong)rg["id"];
-                i.ClassID = (ulong)rg["classid"];
-                i.InstanceID = (ulong)rg["instanceid"];
-                i.Amount = (uint)rg["amount"];
-                i.Pos = (uint)rg["pos"];
-                inv.Items.Add(i);
-            }
-            JToken[] descriptions = obj["rgDescriptions"].ToArray<JToken>();
-            rgDescription d;
-            foreach(JToken des in descriptions)
-            {
-                d = new rgDescription();
-                JToken t = des.Value<JToken>().First();
-                d.ClassID = (ulong)t["classid"];
-                d.InstanceID = (ulong)t["instanceid"];
-                string key = d.ClassID.ToString() + "_" + d.InstanceID.ToString();
-                if (inv.Descriptions.ContainsKey(key)) continue;
-                d.AppID = (ulong)t["appid"];                
-                d.IconUrl = (string)t["icon_url"];
-                d.IconUrlLarge = (string)t["icon_url_large"];
-                d.Name = (string)t["name"];
-                d.MarketHashName = (string)t["market_hash_name"];
-                d.MarketName = (string)t["market_name"];
-                d.NameColor = (string)t["name_color"];
-                d.BackgroundColor = (string)t["backgournd_color"];
-                d.Type = (string)t["type"];
-                d.Tradable = ((int)t["tradable"] != 0);
-                d.Marketable = ((int)t["marketable"] != 0);
-                d.Commodity = ((int)t["commodity"] != 0);
-                d.MarketFeeApp = (ulong)t["market_fee_app"];
-                d.MarketTradeableRestriction = (int)t["market_tradable_restriction"];
-                d.MakretMarketableRestriction = (int)t["market_marketable_restriction"];
-                foreach (JToken val in t["descriptions"].ToArray<JToken>())
-                    d.Descriptions.Add((string)val["value"]);
-                if(t["actions"] != null)
-                    foreach (JToken act in t["actions"].ToArray<JToken>())
-                        d.Actions.Add(new rgDescription.Action((string)act["name"], (string)act["link"]));
-                foreach (JToken tag in t["tags"].ToArray<JToken>())
-                    d.Tags.Add(new rgDescription.Tag((string)tag["internal_name"], (string)tag["name"], (string)tag["category"], (string)tag["category_name"]));
-                JToken appData = t["app_data"];
-                if(appData != null)
-                    d.AppData = new rgDescription.App_Data((ulong)appData["appid"], (int)appData["item_type"]);
-                inv.Descriptions.Add(key, d);                
-            }
+            SteamInventory inv = JsonConvert.DeserializeObject<SteamInventory>(json);
             return inv;
-        }        
+        }
         
         /// <summary>
         /// Private helper method for making code more readable. 
