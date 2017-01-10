@@ -124,7 +124,7 @@ namespace SteamAPI
         }
 
         /// <summary>
-        /// GetOwnedGames returns a list of games a player owns along with some playtime information, if the profile is publicly visible.
+        /// GetOwnedGames returns a list of games that a player owns along with some playtime information, if the profile is publicly visible.
         /// </summary>
         /// <param name="steamID">64-bit Steam ID</param>
         /// <returns>Returns List of OwnedGame</returns>
@@ -161,68 +161,30 @@ namespace SteamAPI
         /// <returns>Returns an int denoting user level.</returns>
         public int GetLevel(ulong steamID)
         {
-            string query = @"http://api.steampowered.com/IPlayerService/GetSteamLevel/v1?key=" + APIKey + @"&steamid=" + steamID;            
+            string query = @"http://api.steampowered.com/IPlayerService/GetSteamLevel/v1?key=" + APIKey + @"&steamid=" + steamID;
             string json = Request(query);
             JObject jObj = JObject.Parse(json);
             if (jObj == null) return -1;
             JToken response = jObj["response"];
             if (response == null) return -1;
             if (response["player_level"] == null) return -1;
-            return (int)response["player_level"];        
-    }
-
-        /// <summary>
-        /// Get a list of bagde information for specified user.
-        /// </summary>
-        /// <param name="steamID">64-bit Steam ID</param>
-        /// <returns>Returns a list of Badge</returns>
-        public List<Badge> GetBadges(ulong steamID)
-        {
-            List<Badge> list = new List<Badge>();
-            string query = @"http://api.steampowered.com/IPlayerService/GetBadges/v1?key=" + APIKey + @"&steamid=" + steamID.ToString();
-            string json = Request(query);
-            JObject obj = JObject.Parse(json);
-            if (obj == null) return list;
-            if (obj["response"] == null) return list;
-            JToken response = obj["response"];
-            if (response["badges"] == null) return list;
-            JToken[] badgesArray = response["badges"].ToArray<JToken>();
-            Badge b;
-            foreach (JToken t in badgesArray)
-            {
-                b = new Badge();                                
-                if(t["badgeid"] != null) b.BadgeID = (int)t["badgeid"];
-                if(t["appid"] != null) b.AppID = (ulong)t["appid"];
-                if (t["level"] != null) b.Level = (int)t["level"];
-                if (t["completion_time"] != null) b.CompletionTime = UnixTimeStampToDateTime((double)t["completion_time"]);
-                if (t["xp"] != null) b.XP = (int)t["xp"];
-                if (t["communityitemid"] != null) b.CommunityItemID = (ulong)t["communityitemid"];
-                if (t["border_color"] != null) b.BorderColor = (int)t["border_color"];
-                if (t["scarcity"] != null) b.Scarcity = (ulong)t["scarcity"];
-                list.Add(b);
-            }
-            return list;
+            return (int)response["player_level"];
         }
 
         /// <summary>
-        /// Gets level stats for a specified user.
+        /// Get a summary of badge information for the specified user.
         /// </summary>
         /// <param name="steamID">64-bit Steam ID</param>
-        /// <returns>Returns LevelStats</returns>
-        public LevelStats GetLevelStats(ulong steamID)
+        /// <returns>Returns a players badge summary</returns>
+        public BadgeSummary GetBadgeSummary(ulong steamID)
         {            
             string query = @"http://api.steampowered.com/IPlayerService/GetBadges/v1?key=" + APIKey + @"&steamid=" + steamID.ToString();
             string json = Request(query);
+            if (String.IsNullOrEmpty(json)) return null;
             JObject obj = JObject.Parse(json);
-            if (obj == null) return null;
-            if (obj["response"] == null) return null;
-            JToken r = obj["response"];
-            LevelStats stats = new LevelStats();
-            if (r["player_xp"] != null) stats.PlayerXP = (ulong)r["player_xp"];
-            if (r["player_level"] != null) stats.Level = (int)r["player_level"];
-            if(r["player_xp_needed_to_level_up"] != null) stats.XPNeeded = (ulong)r["player_xp_needed_to_level_up"];
-            if (r["player_xp_needed_current_level"] != null) stats.NeededCurrentLevel = (ulong)r["player_xp_needed_current_level"];
-            return stats;            
+            if (obj == null || obj["response"] == null) return null;
+            BadgeSummary bs = obj["response"].ToObject<BadgeSummary>();
+            return bs;           
         }
 
         /// <summary>
@@ -278,7 +240,7 @@ namespace SteamAPI
 
         /// <summary>
         /// Retrieves the steam inventory of the specified user. 
-        /// NOTE 2017-Jan: This call seems to be highly rate limited. (3per 2min) 
+        /// NOTE 2017-Jan: This call seems to be highly rate limited. (About 3per 2min) 
         /// </summary>
         /// <param name="steamID">64-bit Steam ID</param>
         /// <param name="startAssetID">The asset ID from which to start retrieving items.</param>
