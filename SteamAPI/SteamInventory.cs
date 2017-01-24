@@ -56,6 +56,7 @@ namespace SteamAPI
             public Tag[] tags { get; set; }
             public DateTime item_expiration { get; set; }
             public Action[] actions { get; set; }
+            public string[] fraudwarnings { get; set; }
             public string DescriptionKey
             {
                 get
@@ -78,6 +79,7 @@ namespace SteamAPI
             public string internal_name { get; set; }
             public string localized_category_name { get; set; }
             public string localized_tag_name { get; set; }
+            public string color { get; set; }
         }
 
         public class Action

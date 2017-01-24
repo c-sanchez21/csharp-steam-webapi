@@ -243,11 +243,13 @@ namespace SteamAPI
         /// NOTE 2017-Jan: This call seems to be highly rate limited. (About 3per 2min) 
         /// </summary>
         /// <param name="steamID">64-bit Steam ID</param>
-        /// <param name="startAssetID">The asset ID from which to start retrieving items.</param>
-        /// <returns>Returns nulls if Inventory is private, otherwise returns entire SteamInventory</returns>
-        public static SteamInventory GetSteamInventory(ulong steamID, ulong startAssetID = 0)
+        /// <param name="appid">The game ID. Steam = 753, Dota 2 = 570 </param>
+        /// <param name="contextid"> The context ID</param>
+        /// <param name="startAssetID">The asset ID from which to start retrieving items.</param>        
+        /// <returns>Returns nulls if Inventory is private, otherwise returns entire the specified inventory.</returns>
+        public static SteamInventory GetSteamInventory(ulong steamID, ulong appid, int contextid, ulong startAssetID = 0)
         {
-            string query = @"http://steamcommunity.com/inventory/" + steamID.ToString() + "/753/6?l=english&count="+MaxItemsPerCall;
+            string query = @"http://steamcommunity.com/inventory/" + steamID.ToString() + "/"+appid.ToString()+"/"+contextid.ToString()+"?l=english&count="+MaxItemsPerCall;
             if (startAssetID > 0)
                 query += "&start_assetid=" + startAssetID.ToString();
             string json = Request(query);
@@ -255,7 +257,18 @@ namespace SteamAPI
             SteamInventory inv = JsonConvert.DeserializeObject<SteamInventory>(json);
             return inv;
         }
-        
+
+        /// <param name="steamID">64-bit Steam ID</param>
+        /// <param name="appid">The game ID. Steam = 753, Dota 2 = 570 </param>
+        /// <param name="contextid"> The context ID</param>
+        /// <param name="startAssetID">The asset ID from which to start retrieving items.</param>        
+        /// <returns>Returns nulls if Inventory is private, otherwise returns entire the specified inventory.</returns>
+        public SteamInventory GetInventory(ulong steamID, ulong appid, int contextid, ulong startAssetID = 0)
+        {
+            return API.GetSteamInventory(steamID, appid, contextid, startAssetID);
+        }
+
+
         /// <summary>
         /// Private helper method for making code more readable. 
         /// </summary>
