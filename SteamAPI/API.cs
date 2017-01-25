@@ -45,6 +45,22 @@ namespace SteamAPI
         }
 
         /// <summary>
+        /// Returns the app details including price of the specified app id
+        /// </summary>
+        /// <param name="appid">The app ID</param>
+        /// <returns></returns>
+        public static AppDetails GetAppDetails(ulong appid)
+        {
+            string query = @"http://store.steampowered.com/api/appdetails?appids=" + appid;
+            string jsonString = Request(query);
+            if (String.IsNullOrEmpty(jsonString)) return null;
+            JObject jObject = JObject.Parse(jsonString);
+            string key = appid.ToString();
+            if (jObject == null || jObject[key] == null) return null;
+            return jObject[key].ToObject<AppDetails>();
+        }
+
+        /// <summary>
         /// Returns the friend list of any Steam user, provided his Steam Community profile visibility is set to "Public". 
         /// </summary>
         /// <param name="steamID">64 bit Steam ID of the friend.</param>
@@ -58,7 +74,7 @@ namespace SteamAPI
             if (String.IsNullOrEmpty(jsonString)) return null;
             JObject jObject = JObject.Parse(jsonString);
             if (jObject == null) return null;
-            JToken jlist = jObject["friendslist"];                        
+            JToken jlist = jObject["friendslist"];
             DateTime friendSince;
             ulong friendID;
             foreach (JToken friend in jlist["friends"].ToArray())
