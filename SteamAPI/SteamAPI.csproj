@@ -51,6 +51,7 @@
     <Compile Include="App.cs" />
     <Compile Include="OwnedGame.cs" />
     <Compile Include="PlayerSummary.cs" />
+    <Compile Include="PriceOverview.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SteamInventory.cs" />
   </ItemGroup>

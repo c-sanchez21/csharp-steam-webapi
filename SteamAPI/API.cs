@@ -256,7 +256,7 @@ namespace SteamAPI
 
         /// <summary>
         /// Retrieves the steam inventory of the specified user. 
-        /// NOTE 2017-Jan: This call seems to be highly rate limited. (About 3per 2min) 
+        /// NOTE 2017-Jan: This call seems to be highly rate limited. (About 3 every 2 minutes) 
         /// </summary>
         /// <param name="steamID">64-bit Steam ID</param>
         /// <param name="appid">The game ID. Steam = 753, Dota 2 = 570 </param>
@@ -265,7 +265,7 @@ namespace SteamAPI
         /// <returns>Returns nulls if Inventory is private, otherwise returns entire the specified inventory.</returns>
         public static SteamInventory GetSteamInventory(ulong steamID, ulong appid, int contextid, ulong startAssetID = 0)
         {
-            string query = @"http://steamcommunity.com/inventory/" + steamID.ToString() + "/"+appid.ToString()+"/"+contextid.ToString()+"?l=english&count="+MaxItemsPerCall;
+            string query = @"http://steamcommunity.com/inventory/" + steamID.ToString() + "/" + appid.ToString() + "/" + contextid.ToString() + "?l=english&count=" + MaxItemsPerCall;
             if (startAssetID > 0)
                 query += "&start_assetid=" + startAssetID.ToString();
             string json = Request(query);
@@ -283,7 +283,24 @@ namespace SteamAPI
         {
             return API.GetSteamInventory(steamID, appid, contextid, startAssetID);
         }
-
+        
+        /// <summary>
+        /// Method for retrieving Steam market prices of the specified item.
+        /// </summary>
+        /// <param name="marketHashName">The market hash name of the item</param>
+        /// <param name="appid"> Optional App ID parameter. Default is Steam (753) </param>
+        /// <param name="currency">Optional int currency parameter. Default is USD (1) </param>
+        /// <returns></returns>
+        public static PriceOverview GetPrice(string marketHashName, ulong appid = 753, int currency = 1)
+        {
+            if (String.IsNullOrEmpty(marketHashName)) return null;
+            string query =
+                @"http://steamcommunity.com/market/priceoverview/?currency=" + currency + "&appid=" + appid + "&market_hash_name=" + marketHashName;
+            string json = Request(query);
+            if (String.IsNullOrEmpty(json)) return null;
+            PriceOverview overview = JsonConvert.DeserializeObject<PriceOverview>(json);
+            return overview;
+        }
 
         /// <summary>
         /// Private helper method for making code more readable. 
@@ -298,7 +315,7 @@ namespace SteamAPI
             JToken response = jObject["response"];
             JToken[] players = response["players"].ToArray<JToken>();
             return players;
-        }
+        }        
 
         /// <summary>
         /// Private helper mehtod which makes the actual API calls. 

@@ -18,7 +18,7 @@ namespace SteamAPI
         {
             public string type { get; set; }
             public string name { get; set; }
-            public int steam_appid { get; set; }
+            public ulong steam_appid { get; set; }
             public int required_age { get; set; }
             public bool is_free { get; set; }
             public string detailed_description { get; set; }
