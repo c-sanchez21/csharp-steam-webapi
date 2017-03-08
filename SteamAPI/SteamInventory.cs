@@ -52,6 +52,7 @@ namespace SteamAPI
             public int commodity { get; set; }
             public int market_tradable_restriction { get; set; }
             public int market_marketable_restriction { get; set; }
+            public string market_fee { get; set; }
             public bool marketable { get; set; }
             public Tag[] tags { get; set; }
             public DateTime item_expiration { get; set; }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace SteamAPI
 {    
@@ -301,6 +302,57 @@ namespace SteamAPI
             PriceOverview overview = JsonConvert.DeserializeObject<PriceOverview>(json);
             return overview;
         }
+
+        /*
+        public void GetItemOrderHistory(SellOrder s, SteamWeb sw)
+        {
+            string submitURL = @"http://steamcommunity.com/market/itemordershistogram/";
+            NameValueCollection data = new NameValueCollection();
+            data.Add("sessionid", sw.SessionId);
+            data.Add("appid", s.Item.AppID.ToString());
+            data.Add("contextid", s.Item.ContextID.ToString());
+            data.Add("assetid", s.Item.ID.ToString());
+            data.Add("amount", "1");
+            data.Add("price", s.Price.ToString());
+            string referer = @"http://steamcommunity.com/market/"; //<- Wont work without this
+            string resp = sw.Fetch(submitURL, "GET", data, false, referer);//Tried true & false but wont work without Referer
+            Console.WriteLine(resp);
+            OnActionCompleted(s);
+        }        
+		data: {
+			country: g_strCountryCode,
+			language: g_strLanguage,
+			currency: typeof( g_rgWalletInfo ) != 'undefined' && g_rgWalletInfo['wallet_currency'] != 0 ? g_rgWalletInfo['wallet_currency'] : 1,
+			item_nameid: item_nameid,
+			two_factor: BIsTwoFactorEnabled() ? 1 : 0
+            */
+
+        public static ulong GetItemNameID(string marketHashName)
+        {
+            string url = @"http://steamcommunity.com/market/listings/753/" + marketHashName;
+            string webData = ReadTextFromUrl(url);
+            return ParseItemNameID(webData);
+        }
+
+        const string RegItemNameID = @"(Market_LoadOrderSpread\(.?)(?<NameID>\d+)(.?\);)";
+        private static ulong ParseItemNameID(string webData)
+        {
+            Match bingo;
+            bingo = Regex.Match(webData, RegItemNameID);
+            if (!bingo.Success) return 0;
+            ulong nameID = Convert.ToUInt64(bingo.Groups["NameID"].ToString());
+            return nameID;
+        }
+
+        private static string ReadTextFromUrl(string url)
+        {
+            using (var client = new WebClient())
+            using (var stream = client.OpenRead(url))
+            using (var textReader = new StreamReader(stream, Encoding.UTF8, true))
+            {
+                return textReader.ReadToEnd();
+            }
+        }        
 
         /// <summary>
         /// Private helper method for making code more readable. 
