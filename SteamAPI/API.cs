@@ -302,33 +302,25 @@ namespace SteamAPI
             PriceOverview overview = JsonConvert.DeserializeObject<PriceOverview>(json);
             return overview;
         }
-
-        /*
-        public void GetItemOrderHistory(SellOrder s, SteamWeb sw)
+        
+        public static ItemOrderInfo GetItemOrders(string marketHashName)
         {
-            string submitURL = @"http://steamcommunity.com/market/itemordershistogram/";
-            NameValueCollection data = new NameValueCollection();
-            data.Add("sessionid", sw.SessionId);
-            data.Add("appid", s.Item.AppID.ToString());
-            data.Add("contextid", s.Item.ContextID.ToString());
-            data.Add("assetid", s.Item.ID.ToString());
-            data.Add("amount", "1");
-            data.Add("price", s.Price.ToString());
-            string referer = @"http://steamcommunity.com/market/"; //<- Wont work without this
-            string resp = sw.Fetch(submitURL, "GET", data, false, referer);//Tried true & false but wont work without Referer
-            Console.WriteLine(resp);
-            OnActionCompleted(s);
-        }        
-		data: {
-			country: g_strCountryCode,
-			language: g_strLanguage,
-			currency: typeof( g_rgWalletInfo ) != 'undefined' && g_rgWalletInfo['wallet_currency'] != 0 ? g_rgWalletInfo['wallet_currency'] : 1,
-			item_nameid: item_nameid,
-			two_factor: BIsTwoFactorEnabled() ? 1 : 0
-            */
+            return GetItemOrders(GetItemNameID(marketHashName));
+        }
+
+        public static ItemOrderInfo GetItemOrders(ulong itemNameID)
+        {
+            string url = @"http://steamcommunity.com/market/itemordershistogram?language=english&currency=1&item_nameid=" + itemNameID;
+            string json = Request(url);            
+            if (String.IsNullOrEmpty(json)) return null;
+            ItemOrderInfo order = JsonConvert.DeserializeObject<ItemOrderInfo>(json);
+            return order;            
+        }
 
         public static ulong GetItemNameID(string marketHashName)
         {
+            //Since there doesn't seem to be a method for getting the Item_NameID 
+            //We grab the info from the web page and parse the ID;
             string url = @"http://steamcommunity.com/market/listings/753/" + marketHashName;
             string webData = ReadTextFromUrl(url);
             return ParseItemNameID(webData);

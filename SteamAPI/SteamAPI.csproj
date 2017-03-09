@@ -49,6 +49,7 @@
     <Compile Include="BadgeSummary.cs" />
     <Compile Include="Friend.cs" />
     <Compile Include="App.cs" />
+    <Compile Include="ItemOrderInfo.cs" />
     <Compile Include="OwnedGame.cs" />
     <Compile Include="PlayerSummary.cs" />
     <Compile Include="PriceOverview.cs" />
