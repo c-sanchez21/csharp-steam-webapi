@@ -6,8 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace SteamAPI
 {    
@@ -296,7 +297,7 @@ namespace SteamAPI
         {
             if (String.IsNullOrEmpty(marketHashName)) return null;
             string query =
-                @"http://steamcommunity.com/market/priceoverview/?currency=" + currency + "&appid=" + appid + "&market_hash_name=" + marketHashName;
+                @"http://steamcommunity.com/market/priceoverview/?currency=" + currency + "&appid=" + appid + "&market_hash_name=" + Uri.EscapeDataString(marketHashName);            
             string json = Request(query);
             if (String.IsNullOrEmpty(json)) return null;
             PriceOverview overview = JsonConvert.DeserializeObject<PriceOverview>(json);
@@ -321,7 +322,8 @@ namespace SteamAPI
         {
             //Since there doesn't seem to be a method for getting the Item_NameID 
             //We grab the info from the web page and parse the ID;
-            string url = @"http://steamcommunity.com/market/listings/753/" + marketHashName;
+            string url = @"http://steamcommunity.com/market/listings/753/" + Uri.EscapeDataString(marketHashName);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
             string webData = ReadTextFromUrl(url);
             return ParseItemNameID(webData);
         }
