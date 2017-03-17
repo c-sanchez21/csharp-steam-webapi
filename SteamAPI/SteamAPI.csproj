@@ -55,6 +55,7 @@
     <Compile Include="PlayerSummary.cs" />
     <Compile Include="PriceOverview.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SearchResults.cs" />
     <Compile Include="SteamInventory.cs" />
   </ItemGroup>
   <ItemGroup>

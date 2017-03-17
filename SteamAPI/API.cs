@@ -346,7 +346,22 @@ namespace SteamAPI
             {
                 return textReader.ReadToEnd();
             }
-        }        
+        }
+        
+        /// <summary>
+        /// Search Steam Market for trading cards
+        /// </summary>
+        /// <returns></returns>
+        public static SearchResults SearchTradingCards(ulong gameAppID, bool foil)
+        {
+            string isFoil = foil ? "1" : "0";
+            string query = @"http://steamcommunity.com/market/search/render/?q=&category_753_Game%5B%5D=tag_app_" +
+                gameAppID.ToString() + "&category_753_cardborder%5B%5D=tag_cardborder_" + isFoil + "&category_753_item_class%5B%5D=tag_item_class_2&appid=753";
+            string json = Request(query);
+            if (String.IsNullOrEmpty(json)) return null;
+            SearchResults results = JsonConvert.DeserializeObject<SearchResults>(json);
+            return results;
+        }
 
         /// <summary>
         /// Private helper method for making code more readable. 
