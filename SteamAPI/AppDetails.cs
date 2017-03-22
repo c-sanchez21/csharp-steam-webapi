@@ -27,7 +27,7 @@ namespace SteamAPI
             public string supported_languages { get; set; }
             public string header_image { get; set; }
             public string website { get; set; }
-            public Requirements pc_requirements { get; set; }
+            //public Requirements pc_requirements { get; set; } //Omitted due to inconsistencies //In Particular AppID:384950
             //public string[] mac_requirements { get; set; } //Omitted due to inconsistencies
             //public string[] linux_requirements { get; set; } //Omitted due to inconsistencies
             public string[] developers { get; set; }
